@@ -16,6 +16,7 @@ use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\Subsites\Model\Subsite;
 
 /**
  * This extension handles most of the relationships between pages and element
@@ -303,7 +304,12 @@ class ElementalAreasExtension extends DataExtension
             $where[] = $queryDetails . ' IS NULL OR ' . $queryDetails . ' = 0' ;
         }
 
-        $records = $ownerClass::get()->where(implode(' OR ', $where));
+        if (class_exists(Subsite::class)) {
+            $records = Subsite::get_from_all_subsites($ownerClass, implode(' OR ', $where));
+        } else {
+            $records = $ownerClass::get()->where(implode(' OR ', $where));
+        }
+
         if ($ignored_classes = Config::inst()->get(ElementalPageExtension::class, 'ignored_classes')) {
             $records = $records->exclude('ClassName', $ignored_classes);
         }
